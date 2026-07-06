@@ -124,9 +124,11 @@ dotnet_naming_symbols.parameter_local_symbol.applicable_kinds = parameter,local
 dotnet_naming_style.camel_style.capitalization = camel_case
 
 # --- Analyzer noise tuning ---
-# CA1707: underscores in member names (not applicable to our _field convention which CA ignores)
 # CA2007: ConfigureAwait not needed in a WPF app with a single UI SynchronizationContext
 dotnet_diagnostic.CA2007.severity = none
+# CA1848: LoggerMessage delegates — a hot-path perf rule; InLay logs at low frequency, so the
+# source-generated-delegate boilerplate is not worth it.
+dotnet_diagnostic.CA1848.severity = none
 
 ##############################
 # Generated / designer files
