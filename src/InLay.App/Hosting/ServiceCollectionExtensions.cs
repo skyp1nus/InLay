@@ -1,4 +1,5 @@
 using System.Globalization;
+using InLay.App.Tray;
 using InLay.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,6 +30,13 @@ internal static class ServiceCollectionExtensions
             .CreateLogger();
 
         builder.Services.AddSerilog();
+
+        // Core runtime state (the paused-flag seam later milestones' engine observes).
+        builder.Services.AddSingleton<AppState>();
+
+        // Tray.
+        builder.Services.AddSingleton<TrayViewModel>();
+
         builder.Services.AddHostedService<ApplicationHostService>();
 
         return builder;

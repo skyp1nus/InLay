@@ -18,6 +18,10 @@
     <PackageReference Include="Serilog.Sinks.File" />
   </ItemGroup>
 
+  <ItemGroup Label="MVVM">
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
   <ItemGroup Label="UI">
     <PackageReference Include="WPF-UI" />
   </ItemGroup>

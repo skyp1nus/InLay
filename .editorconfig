@@ -126,9 +126,10 @@ dotnet_naming_style.camel_style.capitalization = camel_case
 # --- Analyzer noise tuning ---
 # CA2007: ConfigureAwait not needed in a WPF app with a single UI SynchronizationContext
 dotnet_diagnostic.CA2007.severity = none
-# CA1848: LoggerMessage delegates — a hot-path perf rule; InLay logs at low frequency, so the
-# source-generated-delegate boilerplate is not worth it.
+# CA1848 / CA1873: logging-performance rules (LoggerMessage delegates; guard argument evaluation
+# behind IsEnabled). InLay logs at low frequency on user actions, so neither is worth the boilerplate.
 dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
 
 ##############################
 # Generated / designer files
