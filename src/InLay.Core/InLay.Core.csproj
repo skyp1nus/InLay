@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Engine: layout monitoring, caret tracking, models, settings.
+       HARD RULE: never reference WPF, WinForms, or any UI assembly. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>InLay.Core</RootNamespace>
+    <AssemblyName>InLay.Core</AssemblyName>
+    <UseWPF>false</UseWPF>
+    <UseWindowsForms>false</UseWindowsForms>
+  </PropertyGroup>
+
+</Project>

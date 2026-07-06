@@ -1,0 +1,37 @@
+<Project>
+
+  <!-- Shared MSBuild properties for every project in the solution. -->
+  <PropertyGroup Label="Language &amp; platform">
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- InLay is a Windows-only x64 overlay utility. x64 is required so CsWin32 emits the
+         *Ptr P/Invokes (GetWindowLongPtr/SetWindowLongPtr) — not generated on AnyCPU/x86. -->
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Quality">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591: missing XML doc comment on public member — docs are not mandatory. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Code-style (IDExxxx) rules stay editor guidance; only compiler + CA analyzers are
+         build-enforced, keeping cosmetic style out of the warnings-as-errors gate. -->
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Product metadata">
+    <Product>InLay</Product>
+    <Company>InLay</Company>
+    <Authors>Vladyslav Yeromenko</Authors>
+    <Copyright>Copyright © 2026 Vladyslav Yeromenko</Copyright>
+    <Version>0.1.0</Version>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

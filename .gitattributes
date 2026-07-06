@@ -1,0 +1,26 @@
+# Normalize line endings. This is a Windows-only C#/WPF project.
+* text=auto eol=crlf
+
+# Explicit text files
+*.cs        text diff=csharp
+*.csproj    text
+*.sln       text eol=crlf
+*.props     text
+*.targets   text
+*.xaml      text
+*.json      text
+*.md        text
+*.txt       text
+*.manifest  text
+*.editorconfig text
+.gitattributes text
+.gitignore  text
+
+# Binary assets — never touch line endings
+*.ico       binary
+*.png       binary
+*.jpg       binary
+*.gif       binary
+*.dll       binary
+*.exe       binary
+*.snk       binary

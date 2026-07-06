@@ -1,0 +1,28 @@
+// CsWin32 input for the click-through overlay base (docs §4.3). One API/enum per line;
+// CsWin32 source-generates type-safe wrappers under the generated PInvoke class.
+// Flag/index constants are requested by their declaring enum type (CsWin32 rule PInvoke004).
+
+// Functions.
+// GWL_EXSTYLE is a 32-bit LONG, so GetWindowLong/SetWindowLong are correct and sufficient here; they
+// also generate on AnyCPU (unlike the *Ptr variants, which CsWin32 emits only for 64-bit builds).
+GetWindowLong
+SetWindowLong
+SetWindowPos
+MonitorFromWindow
+GetDpiForMonitor
+GetDpiForWindow
+
+// Enums whose members the overlay uses:
+//   WINDOW_EX_STYLE       -> WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW
+//   WINDOW_LONG_PTR_INDEX -> GWL_EXSTYLE
+//   SET_WINDOW_POS_FLAGS  -> SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER
+//   MONITOR_FROM_FLAGS    -> MONITOR_DEFAULTTONEAREST
+//   MONITOR_DPI_TYPE      -> MDT_EFFECTIVE_DPI
+WINDOW_EX_STYLE
+WINDOW_LONG_PTR_INDEX
+SET_WINDOW_POS_FLAGS
+MONITOR_FROM_FLAGS
+MONITOR_DPI_TYPE
+
+// Special z-order HWND constant for SetWindowPos.
+HWND_TOPMOST
