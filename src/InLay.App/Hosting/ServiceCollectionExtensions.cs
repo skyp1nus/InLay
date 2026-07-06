@@ -1,5 +1,6 @@
 using System.Globalization;
 using InLay.App.Autostart;
+using InLay.App.Settings;
 using InLay.App.Tray;
 using InLay.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +38,10 @@ internal static class ServiceCollectionExtensions
 
         // Autostart.
         builder.Services.AddSingleton<IAutostartService, RegistryAutostartService>();
+
+        // Settings.
+        builder.Services.AddSingleton<SettingsViewModel>();
+        builder.Services.AddSingleton<ISettingsWindowService, SettingsWindowService>();
 
         // Tray.
         builder.Services.AddSingleton<TrayViewModel>();

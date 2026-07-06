@@ -1,6 +1,7 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using InLay.App.Settings;
 using InLay.Core;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,7 @@ namespace InLay.App.Tray;
 internal sealed partial class TrayViewModel : ObservableObject, IDisposable
 {
     private readonly AppState _appState;
+    private readonly ISettingsWindowService _settingsWindow;
     private readonly ILogger<TrayViewModel> _logger;
 
     [ObservableProperty]
@@ -21,9 +23,10 @@ internal sealed partial class TrayViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _toolTip = ProductInfo.Name;
 
-    public TrayViewModel(AppState appState, ILogger<TrayViewModel> logger)
+    public TrayViewModel(AppState appState, ISettingsWindowService settingsWindow, ILogger<TrayViewModel> logger)
     {
         _appState = appState;
+        _settingsWindow = settingsWindow;
         _logger = logger;
 
         _appState.PausedChanged += OnPausedChanged;
@@ -40,8 +43,8 @@ internal sealed partial class TrayViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowSettings()
     {
-        // Wired to the settings window service in a later commit.
         _logger.LogInformation("Settings requested.");
+        _settingsWindow.Show();
     }
 
     [RelayCommand]
