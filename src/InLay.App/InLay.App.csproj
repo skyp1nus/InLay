@@ -24,6 +24,11 @@
 
   <ItemGroup Label="UI">
     <PackageReference Include="WPF-UI" />
+    <PackageReference Include="H.NotifyIcon.Wpf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\InLay.ico" />
   </ItemGroup>
 
   <ItemGroup>

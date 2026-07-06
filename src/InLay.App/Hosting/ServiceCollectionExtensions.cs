@@ -36,6 +36,7 @@ internal static class ServiceCollectionExtensions
 
         // Tray.
         builder.Services.AddSingleton<TrayViewModel>();
+        builder.Services.AddSingleton<TrayIconService>();
 
         builder.Services.AddHostedService<ApplicationHostService>();
 
