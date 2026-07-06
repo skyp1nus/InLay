@@ -1,4 +1,5 @@
 using System.Globalization;
+using InLay.App.Autostart;
 using InLay.App.Tray;
 using InLay.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,9 @@ internal static class ServiceCollectionExtensions
 
         // Core runtime state (the paused-flag seam later milestones' engine observes).
         builder.Services.AddSingleton<AppState>();
+
+        // Autostart.
+        builder.Services.AddSingleton<IAutostartService, RegistryAutostartService>();
 
         // Tray.
         builder.Services.AddSingleton<TrayViewModel>();
