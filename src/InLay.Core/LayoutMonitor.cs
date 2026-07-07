@@ -31,6 +31,10 @@ public sealed class LayoutMonitor : IDisposable
     private const int SlowPollIntervalMs = 1000;  // ~1 Hz
     private const int IdlePollThreshold = 15;      // back off after ~3 s of no change
 
+    // Focus events are read after a short settle delay so transient focus churn (a tray menu, the
+    // taskbar, alt-tab) collapses to a single read of the window that actually keeps focus.
+    private const int FocusDebounceMs = 200;
+
     private readonly AppState _appState;
     private readonly WNDPROC _wndProc;
     private readonly WINEVENTPROC _winEventProc;
@@ -48,6 +52,7 @@ public sealed class LayoutMonitor : IDisposable
     private Timer? _pollTimer;
     private ushort _pollLastSeenLangId;
     private int _pollIdleCount;
+    private Timer? _focusDebounceTimer;
 
     /// <summary>Creates a monitor bound to <paramref name="appState"/>; call <see cref="Start"/> to begin.</summary>
     public LayoutMonitor(AppState appState)
@@ -106,6 +111,7 @@ public sealed class LayoutMonitor : IDisposable
         _appState.PausedChanged -= OnPausedChanged;
         Stop();
         _pollTimer?.Dispose();
+        _focusDebounceTimer?.Dispose();
         _foregroundHook?.Dispose();
         _focusHook?.Dispose();
         _ready.Dispose();
@@ -181,6 +187,7 @@ public sealed class LayoutMonitor : IDisposable
             default, _winEventProc, 0, 0, PInvoke.WINEVENT_OUTOFCONTEXT);
 
         _pollTimer = new Timer(PollTimerCallback, state: null, FastPollIntervalMs, Timeout.Infinite);
+        _focusDebounceTimer = new Timer(FocusDebounceCallback, state: null, Timeout.Infinite, Timeout.Infinite);
 
         return true;
     }
@@ -189,6 +196,8 @@ public sealed class LayoutMonitor : IDisposable
     {
         _pollTimer?.Dispose(); // dispose first so a late callback cannot post to a destroyed window
         _pollTimer = null;
+        _focusDebounceTimer?.Dispose();
+        _focusDebounceTimer = null;
 
         _foregroundHook?.Dispose(); // UnhookWinEventSafeHandle unhooks on dispose
         _foregroundHook = null;
@@ -242,7 +251,36 @@ public sealed class LayoutMonitor : IDisposable
 
     private void OnWinEvent(
         HWINEVENTHOOK hook, uint eventId, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime) =>
-        ReadForegroundLayout();
+        ScheduleFocusRead();
+
+    // Restarts the settle timer on every focus/foreground event, so only the window that keeps focus
+    // for FocusDebounceMs is read — collapsing transient focus churn (menus, taskbar) into one read.
+    private void ScheduleFocusRead()
+    {
+        Timer? timer = _focusDebounceTimer;
+        if (timer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _ = timer.Change(FocusDebounceMs, Timeout.Infinite);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Disposed during teardown between the null check and here — nothing to do.
+        }
+    }
+
+    private void FocusDebounceCallback(object? state)
+    {
+        nint hkl = ReadForegroundHkl();
+        if (hkl != 0 && !_window.IsNull)
+        {
+            _ = PInvoke.PostMessage(_window, PollMessage, default, new LPARAM(hkl));
+        }
+    }
 
     private void ReadForegroundLayout() => OnLayoutFromHkl(ReadForegroundHkl());
 
