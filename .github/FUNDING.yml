@@ -1,0 +1,6 @@
+# Funding platforms for InLay. Renders a "Sponsor" button on the repo.
+# Docs: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+# Replace the placeholders below with the real handles before release.
+
+github: [skyp1nus] # placeholder — GitHub Sponsors must be enabled for this account
+ko_fi: your-ko-fi # placeholder — Ko-fi username
