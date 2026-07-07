@@ -24,6 +24,7 @@ The full technical plan lives in `docs/InLay-tech-plan.md`. Read the section rel
 - Win32 coordinates are physical pixels everywhere in Core; convert to DIPs only at the WPF boundary. DPI awareness is `PerMonitorV2`.
 - Overlay windows: `WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`, `ShowActivated=false`, `ShowInTaskbar=false`, positioned via `SetWindowPos` in physical pixels.
 - Ask before adding any new NuGet dependency.
+- Third-party NuGet dependencies must be MIT/Apache-2.0/BSD only, to keep InLay.Core and the app freely usable by everyone, including commercially.
 
 ## Git & commits
 - Branch per task: `feature/<area>-<short-name>`. Never commit directly to `main`.
