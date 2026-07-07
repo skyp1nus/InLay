@@ -22,6 +22,15 @@ public sealed class LayoutMonitor : IDisposable
     /// <summary>Private window message (WM_APP + 1) that asks the pump thread to re-read the layout.</summary>
     private const uint ReEvaluateMessage = 0x8000 + 1;
 
+    /// <summary>Private window message (WM_APP + 2) carrying an HKL the fallback poll wants resolved.</summary>
+    private const uint PollMessage = 0x8000 + 2;
+
+    // Adaptive fallback poll (docs §4.1 item 4): a safety net for windows that do not raise the shell
+    // hook / WinEvents. It runs fast while layouts are changing and backs off to ~1 Hz when idle.
+    private const int FastPollIntervalMs = 200;   // ~5 Hz
+    private const int SlowPollIntervalMs = 1000;  // ~1 Hz
+    private const int IdlePollThreshold = 15;      // back off after ~3 s of no change
+
     private readonly AppState _appState;
     private readonly WNDPROC _wndProc;
     private readonly WINEVENTPROC _winEventProc;
@@ -34,6 +43,11 @@ public sealed class LayoutMonitor : IDisposable
     private UnhookWinEventSafeHandle? _foregroundHook;
     private UnhookWinEventSafeHandle? _focusHook;
     private ushort _lastLangId;
+
+    // Poll state — touched only on the (non-overlapping) timer callback, so no synchronization needed.
+    private Timer? _pollTimer;
+    private ushort _pollLastSeenLangId;
+    private int _pollIdleCount;
 
     /// <summary>Creates a monitor bound to <paramref name="appState"/>; call <see cref="Start"/> to begin.</summary>
     public LayoutMonitor(AppState appState)
@@ -91,6 +105,7 @@ public sealed class LayoutMonitor : IDisposable
     {
         _appState.PausedChanged -= OnPausedChanged;
         Stop();
+        _pollTimer?.Dispose();
         _foregroundHook?.Dispose();
         _focusHook?.Dispose();
         _ready.Dispose();
@@ -165,11 +180,16 @@ public sealed class LayoutMonitor : IDisposable
             PInvoke.EVENT_OBJECT_FOCUS, PInvoke.EVENT_OBJECT_FOCUS,
             default, _winEventProc, 0, 0, PInvoke.WINEVENT_OUTOFCONTEXT);
 
+        _pollTimer = new Timer(PollTimerCallback, state: null, FastPollIntervalMs, Timeout.Infinite);
+
         return true;
     }
 
     private void Cleanup(PCWSTR className)
     {
+        _pollTimer?.Dispose(); // dispose first so a late callback cannot post to a destroyed window
+        _pollTimer = null;
+
         _foregroundHook?.Dispose(); // UnhookWinEventSafeHandle unhooks on dispose
         _foregroundHook = null;
         _focusHook?.Dispose();
@@ -208,6 +228,10 @@ public sealed class LayoutMonitor : IDisposable
                 _lastLangId = 0; // force the next resolve to emit
                 ReadForegroundLayout();
                 return default;
+            case PollMessage:
+                // Fallback poll carries the HKL it observed; the normal de-dup decides whether to emit.
+                OnLayoutFromHkl(lParam.Value);
+                return default;
             case PInvoke.WM_CLOSE:
                 PInvoke.PostQuitMessage(0);
                 return default;
@@ -220,16 +244,67 @@ public sealed class LayoutMonitor : IDisposable
         HWINEVENTHOOK hook, uint eventId, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime) =>
         ReadForegroundLayout();
 
-    private void ReadForegroundLayout()
+    private void ReadForegroundLayout() => OnLayoutFromHkl(ReadForegroundHkl());
+
+    private static nint ReadForegroundHkl()
     {
         HWND foreground = PInvoke.GetForegroundWindow();
         if (foreground.IsNull)
         {
-            return;
+            return 0;
         }
 
         uint threadId = PInvoke.GetWindowThreadProcessId(foreground);
-        OnLayoutFromHkl(HklToNint(PInvoke.GetKeyboardLayout(threadId)));
+        return HklToNint(PInvoke.GetKeyboardLayout(threadId));
+    }
+
+    // Runs on a thread-pool thread. It reschedules itself (never overlaps), reads the foreground HKL
+    // cheaply, and — only when the layout actually changed — hands it to the pump thread to emit.
+    private void PollTimerCallback(object? state)
+    {
+        Timer? timer = _pollTimer;
+        if (timer is null)
+        {
+            return;
+        }
+
+        if (_appState.IsPaused)
+        {
+            Reschedule(timer, SlowPollIntervalMs);
+            return;
+        }
+
+        nint hkl = ReadForegroundHkl();
+        ushort current = KeyboardLayoutResolver.LangIdFromHkl(hkl);
+
+        if (current != 0 && current != _pollLastSeenLangId)
+        {
+            _pollLastSeenLangId = current;
+            _pollIdleCount = 0;
+            if (!_window.IsNull)
+            {
+                _ = PInvoke.PostMessage(_window, PollMessage, default, new LPARAM(hkl));
+            }
+
+            Reschedule(timer, FastPollIntervalMs);
+        }
+        else
+        {
+            _pollIdleCount++;
+            Reschedule(timer, _pollIdleCount >= IdlePollThreshold ? SlowPollIntervalMs : FastPollIntervalMs);
+        }
+    }
+
+    private static void Reschedule(Timer timer, int intervalMs)
+    {
+        try
+        {
+            _ = timer.Change(intervalMs, Timeout.Infinite);
+        }
+        catch (ObjectDisposedException)
+        {
+            // The timer was disposed during teardown between the null check and here — nothing to do.
+        }
     }
 
     private void OnLayoutFromHkl(nint hkl)
