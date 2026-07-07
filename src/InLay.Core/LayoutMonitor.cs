@@ -254,7 +254,16 @@ public sealed class LayoutMonitor : IDisposable
             return 0;
         }
 
-        uint threadId = PInvoke.GetWindowThreadProcessId(foreground);
+        uint threadId = PInvoke.GetWindowThreadProcessId(foreground, out uint processId);
+
+        // Ignore our own windows (the tray context menu, the settings window): focusing them would
+        // otherwise report this process's layout and flash the indicator spuriously — most noticeably
+        // on a tray right-click. Genuine layout switches still arrive via the shell hook, unfiltered.
+        if (processId == (uint)Environment.ProcessId)
+        {
+            return 0;
+        }
+
         return HklToNint(PInvoke.GetKeyboardLayout(threadId));
     }
 
