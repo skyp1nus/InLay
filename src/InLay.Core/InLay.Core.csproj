@@ -19,4 +19,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- Let the test project reach internal engine helpers (e.g. LayoutMonitor.ShouldEmit) without
+       widening the public API surface. -->
+  <ItemGroup Label="Testing">
+    <InternalsVisibleTo Include="InLay.Tests" />
+  </ItemGroup>
+
 </Project>

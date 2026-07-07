@@ -47,6 +47,7 @@ public sealed class LayoutMonitor : IDisposable
     private UnhookWinEventSafeHandle? _foregroundHook;
     private UnhookWinEventSafeHandle? _focusHook;
     private ushort _lastLangId;
+    private LayoutChangeReason _lastReason;
 
     // Poll state — touched only on the (non-overlapping) timer callback, so no synchronization needed.
     private Timer? _pollTimer;
@@ -372,13 +373,37 @@ public sealed class LayoutMonitor : IDisposable
         }
 
         ushort langId = KeyboardLayoutResolver.LangIdFromHkl(hkl);
-        if (langId == 0 || langId == _lastLangId)
+        if (!ShouldEmit(langId, reason, _lastLangId, _lastReason))
         {
             return;
         }
 
         _lastLangId = langId;
+        _lastReason = reason;
         LayoutChanged?.Invoke(this, new LayoutChange(KeyboardLayoutResolver.Resolve(hkl), reason));
+    }
+
+    /// <summary>
+    /// Pure de-dup decision for <see cref="OnLayoutFromHkl"/>, extracted so it can be unit-tested without the
+    /// Win32 message pump. A different <paramref name="langId"/> always emits. The same layout re-emits only to
+    /// "upgrade" a prior <see cref="LayoutChangeReason.FocusRefresh"/> into a <see cref="LayoutChangeReason.LayoutSwitch"/>:
+    /// the fallback poll or a focus read can observe an in-place switch's new HKL and report it as a refresh
+    /// before the authoritative <c>HSHELL_LANGUAGE</c> arrives, and without this the later real switch would be
+    /// de-duped away and the transient splash would never fire. A refresh for an already-reported layout is dropped.
+    /// </summary>
+    internal static bool ShouldEmit(ushort langId, LayoutChangeReason reason, ushort lastLangId, LayoutChangeReason lastReason)
+    {
+        if (langId == 0)
+        {
+            return false;
+        }
+
+        if (langId != lastLangId)
+        {
+            return true;
+        }
+
+        return reason == LayoutChangeReason.LayoutSwitch && lastReason != LayoutChangeReason.LayoutSwitch;
     }
 
     private void OnPausedChanged(object? sender, bool isPaused)
