@@ -1,0 +1,39 @@
+// CsWin32 input for the LayoutMonitor engine (docs §4.1). One API/constant per line;
+// CsWin32 source-generates type-safe wrappers under the generated PInvoke class. Structs and
+// delegates (WNDCLASSEXW, MSG, WNDPROC, WINEVENTPROC) are emitted automatically as parameters.
+
+// --- Layout-switch detection ---------------------------------------------------------------
+// Shell hook: RegisterShellHookWindow makes the (hidden) window receive WM_SHELLHOOKMESSAGE,
+// whose id comes from RegisterWindowMessage("SHELLHOOK"); wParam == HSHELL_LANGUAGE on a change.
+RegisterShellHookWindow
+DeregisterShellHookWindow
+RegisterWindowMessage
+// Focus tracking: re-read the layout of the newly focused/foreground window.
+SetWinEventHook
+UnhookWinEvent
+GetForegroundWindow
+GetWindowThreadProcessId
+GetKeyboardLayout
+// HKL LANGID -> BCP-47 locale name for the user-facing label.
+LCIDToLocaleName
+
+// --- Self-contained hidden window + message pump (Core stays WPF-free, docs §3/§10) ---------
+CreateWindowEx
+DefWindowProc
+RegisterClassEx
+UnregisterClass
+GetModuleHandle
+GetMessage
+TranslateMessage
+DispatchMessage
+PostMessage
+PostQuitMessage
+DestroyWindow
+
+// --- Standalone constants (not enum members, so requested individually) ----------------------
+HSHELL_LANGUAGE
+EVENT_SYSTEM_FOREGROUND
+EVENT_OBJECT_FOCUS
+WINEVENT_OUTOFCONTEXT
+WM_CLOSE
+WM_DESTROY

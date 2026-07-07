@@ -1,5 +1,6 @@
 using System.Globalization;
 using InLay.App.Autostart;
+using InLay.App.Overlays;
 using InLay.App.Settings;
 using InLay.App.Tray;
 using InLay.Core;
@@ -46,6 +47,13 @@ internal static class ServiceCollectionExtensions
         // Tray.
         builder.Services.AddSingleton<TrayViewModel>();
         builder.Services.AddSingleton<TrayIconService>();
+
+        // Layout engine + indicator overlays (M1).
+        builder.Services.AddSingleton<LayoutMonitor>();
+        builder.Services.AddSingleton<FullScreenSplash>();
+        builder.Services.AddSingleton<CornerHud>();
+        builder.Services.AddSingleton<IndicatorCoordinator>();
+        builder.Services.AddSingleton<IIndicatorController>(sp => sp.GetRequiredService<IndicatorCoordinator>());
 
         builder.Services.AddHostedService<ApplicationHostService>();
 

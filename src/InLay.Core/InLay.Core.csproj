@@ -10,4 +10,13 @@
     <UseWindowsForms>false</UseWindowsForms>
   </PropertyGroup>
 
+  <!-- Interop: CsWin32 is a build-time source generator (PrivateAssets=all), not a UI assembly,
+       so it does not violate the "no UI in Core" rule. It backs the LayoutMonitor's shell hook,
+       WinEvent focus hooks, and its self-contained hidden-window message pump (docs §4.1). -->
+  <ItemGroup Label="Interop">
+    <PackageReference Include="Microsoft.Windows.CsWin32">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

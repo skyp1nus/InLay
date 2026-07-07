@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -53,6 +54,29 @@ internal static class OverlayInterop
         return PInvoke.GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _).Succeeded
             ? dpiX
             : DefaultDpi;
+    }
+
+    /// <summary>
+    /// Physical-pixel bounds of the primary monitor (position + size), used to center or corner-anchor
+    /// overlays. Falls back to <c>(0, 0, 0, 0)</c> returning <c>false</c> on failure.
+    /// </summary>
+    public static bool TryGetPrimaryMonitorBounds(nint windowHandle, out int x, out int y, out int width, out int height)
+    {
+        x = y = width = height = 0;
+
+        HMONITOR monitor = PInvoke.MonitorFromWindow(new HWND(windowHandle), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY);
+        var info = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+        if (!PInvoke.GetMonitorInfo(monitor, ref info))
+        {
+            return false;
+        }
+
+        RECT bounds = info.rcMonitor;
+        x = bounds.left;
+        y = bounds.top;
+        width = bounds.right - bounds.left;
+        height = bounds.bottom - bounds.top;
+        return true;
     }
 
     /// <summary>Pure OR of the four click-through extended styles onto an existing GWL_EXSTYLE bitmask.</summary>
