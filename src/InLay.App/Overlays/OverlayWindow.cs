@@ -39,4 +39,8 @@ internal abstract class OverlayWindow : Window
 
     /// <summary>Effective DPI (96 = 100%) of the monitor the overlay is currently on.</summary>
     public uint GetCurrentDpi() => OverlayInterop.GetDpiForNearestMonitor(Handle);
+
+    /// <summary>Physical-pixel bounds (position + size) of the primary monitor; <c>false</c> on failure.</summary>
+    protected bool TryGetPrimaryMonitorBounds(out int x, out int y, out int width, out int height) =>
+        OverlayInterop.TryGetPrimaryMonitorBounds(Handle, out x, out y, out width, out height);
 }

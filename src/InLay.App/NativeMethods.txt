@@ -11,6 +11,9 @@ SetWindowPos
 MonitorFromWindow
 GetDpiForMonitor
 GetDpiForWindow
+// Physical bounds of the overlay's monitor, for centering/corner-anchoring indicator overlays (M1).
+GetMonitorInfo
+MONITORINFO
 
 // Enums whose members the overlay uses:
 //   WINDOW_EX_STYLE       -> WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW
