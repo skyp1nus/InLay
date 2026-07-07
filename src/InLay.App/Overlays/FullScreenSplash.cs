@@ -2,23 +2,30 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using InLay.Core;
 
 namespace InLay.App.Overlays;
 
 /// <summary>
 /// FullScreenSplash indicator (docs §4.4): a large translucent pill centered on the primary monitor
-/// that fades in and out on each layout switch. It needs no caret, so it is useful even before caret
-/// tracking exists. Purely visual feedback — the click-through base means it never takes focus.
+/// that fades in on a layout switch, holds, then fades out. It needs no caret, so it is useful even
+/// before caret tracking exists. During rapid switching it stays visible and only swaps the label — the
+/// fade always eases from the current opacity, so it never restarts from zero (no flicker).
 /// </summary>
 internal sealed class FullScreenSplash : OverlayWindow
 {
     private const double PillWidthDip = 240;
     private const double PillHeightDip = 150;
 
+    private static readonly Duration FadeInDuration = new(TimeSpan.FromMilliseconds(130));
+    private static readonly Duration FadeOutDuration = new(TimeSpan.FromMilliseconds(280));
+
     private readonly TextBlock _label;
     private readonly Border _pill;
-    private readonly Storyboard _fade;
+    private readonly DoubleAnimation _fadeIn;
+    private readonly DoubleAnimation _fadeOut;
+    private readonly DispatcherTimer _holdTimer;
 
     public FullScreenSplash()
     {
@@ -41,23 +48,50 @@ internal sealed class FullScreenSplash : OverlayWindow
 
         Content = _pill;
 
-        _fade = BuildFadeStoryboard(_pill);
-        _fade.Completed += OnFadeCompleted;
+        // No From: the fade always starts from the pill's current opacity, so a switch mid-fade eases
+        // smoothly instead of snapping back to zero.
+        _fadeIn = new DoubleAnimation
+        {
+            To = 1.0,
+            Duration = FadeInDuration,
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+        };
+
+        _fadeOut = new DoubleAnimation
+        {
+            To = 0.0,
+            Duration = FadeOutDuration,
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+        };
+        _fadeOut.Completed += OnFadeOutCompleted;
+
+        _holdTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(700) };
+        _holdTimer.Tick += OnHoldElapsed;
     }
 
-    /// <summary>Positions the splash for <paramref name="layout"/> and plays the fade in/out.</summary>
+    /// <summary>Shows the splash for <paramref name="layout"/>: fades to full opacity, then holds before fading out.</summary>
     public void Show(LayoutInfo layout)
     {
         _label.Text = layout.Label;
-        PositionOnPrimaryMonitor();
 
         if (!IsVisible)
         {
+            PositionOnPrimaryMonitor();
             base.Show();
         }
 
-        _fade.Begin();
+        _pill.BeginAnimation(UIElement.OpacityProperty, _fadeIn);
+        _holdTimer.Stop();
+        _holdTimer.Start(); // (re)start the hold; rapid switches keep the pill up and just swap the label
     }
+
+    private void OnHoldElapsed(object? sender, EventArgs e)
+    {
+        _holdTimer.Stop();
+        _pill.BeginAnimation(UIElement.OpacityProperty, _fadeOut);
+    }
+
+    private void OnFadeOutCompleted(object? sender, EventArgs e) => Hide();
 
     private void PositionOnPrimaryMonitor()
     {
@@ -71,24 +105,5 @@ internal sealed class FullScreenSplash : OverlayWindow
             int y = monitorY + ((monitorHeight - height) / 2);
             SetPhysicalBounds(x, y, width, height);
         }
-    }
-
-    private void OnFadeCompleted(object? sender, EventArgs e) => Hide();
-
-    private static Storyboard BuildFadeStoryboard(UIElement target)
-    {
-        // Fade in (0→1) over 180 ms, hold, then fade out (1→0), ending at ~720 ms total (docs §4.4).
-        var animation = new DoubleAnimationUsingKeyFrames();
-        animation.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-        animation.KeyFrames.Add(new LinearDoubleKeyFrame(1.0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(180))));
-        animation.KeyFrames.Add(new LinearDoubleKeyFrame(1.0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(520))));
-        animation.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(720))));
-
-        Storyboard.SetTarget(animation, target);
-        Storyboard.SetTargetProperty(animation, new PropertyPath(UIElement.OpacityProperty));
-
-        var storyboard = new Storyboard();
-        storyboard.Children.Add(animation);
-        return storyboard;
     }
 }

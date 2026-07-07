@@ -37,14 +37,16 @@ internal sealed class CornerHud : OverlayWindow
         };
     }
 
-    /// <summary>Updates the pill to <paramref name="layout"/>, repositions it, and shows it (persistent).</summary>
+    /// <summary>Updates the pill to <paramref name="layout"/> and shows it (persistent, fixed corner).</summary>
     public void Show(LayoutInfo layout)
     {
         _label.Text = layout.Label;
-        PositionBottomRight();
 
+        // The pill is a fixed size anchored to a fixed corner, so its bounds only need computing on the
+        // first show; rapid switches then just swap the label without redundant Win32 positioning calls.
         if (!IsVisible)
         {
+            PositionBottomRight();
             base.Show();
         }
     }
