@@ -108,15 +108,18 @@ internal sealed class IndicatorCoordinator : IIndicatorController, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private void OnLayoutChanged(object? sender, LayoutInfo layout) => OnUi(() =>
+    private void OnLayoutChanged(object? sender, LayoutChange e) => OnUi(() =>
     {
+        LayoutInfo layout = e.Layout;
         _current = layout;
         if (_appState.IsPaused)
         {
             return;
         }
 
-        if (_mode is IndicatorMode.Splash or IndicatorMode.Both)
+        // The splash is transient: fire it only on a real in-place switch, so it never flashes on a focus
+        // change, startup, resume, or fallback-poll refresh. The persistent HUD reflects every read.
+        if (e.Reason == LayoutChangeReason.LayoutSwitch && _mode is IndicatorMode.Splash or IndicatorMode.Both)
         {
             _splash.Show(layout);
         }

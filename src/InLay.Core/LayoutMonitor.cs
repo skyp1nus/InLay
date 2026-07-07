@@ -63,8 +63,12 @@ public sealed class LayoutMonitor : IDisposable
         _appState.PausedChanged += OnPausedChanged;
     }
 
-    /// <summary>Raised on the pump thread when the active keyboard layout changes (de-duplicated).</summary>
-    public event EventHandler<LayoutInfo>? LayoutChanged;
+    /// <summary>
+    /// Raised on the pump thread when the active keyboard layout changes (de-duplicated by LANGID). The
+    /// payload carries a <see cref="LayoutChangeReason"/> so consumers can tell a real in-place switch
+    /// (<c>HSHELL_LANGUAGE</c>) from a mere refresh (focus change, startup, resume, fallback poll).
+    /// </summary>
+    public event EventHandler<LayoutChange>? LayoutChanged;
 
     /// <summary>Starts the pump thread and installs the hooks. Idempotent; blocks until hooks are ready.</summary>
     public void Start()
@@ -224,8 +228,9 @@ public sealed class LayoutMonitor : IDisposable
         {
             if ((uint)wParam.Value == PInvoke.HSHELL_LANGUAGE)
             {
-                // On HSHELL_LANGUAGE, lParam carries the HKL of the newly activated layout.
-                OnLayoutFromHkl(lParam.Value);
+                // On HSHELL_LANGUAGE, lParam carries the HKL of the newly activated layout. This is the
+                // only signal that means the language was toggled in place, so it alone is a LayoutSwitch.
+                OnLayoutFromHkl(lParam.Value, LayoutChangeReason.LayoutSwitch);
             }
 
             return default;
@@ -235,11 +240,16 @@ public sealed class LayoutMonitor : IDisposable
         {
             case ReEvaluateMessage:
                 _lastLangId = 0; // force the next resolve to emit
-                ReadForegroundLayout();
+                // Startup/resume re-read: refresh persistent indicators without flashing the splash.
+                ReadForegroundLayout(LayoutChangeReason.FocusRefresh);
                 return default;
             case PollMessage:
-                // Fallback poll carries the HKL it observed; the normal de-dup decides whether to emit.
-                OnLayoutFromHkl(lParam.Value);
+                // The fallback poll and the debounced focus read share this path; both carry the HKL they
+                // observed and are reported as a refresh, never a switch — so neither flashes the transient
+                // splash (only HSHELL_LANGUAGE does). Future refinement: the poll could be made HWND-aware
+                // (a langid change while the foreground window is unchanged is a genuine in-place switch),
+                // but that is deferred for now. The normal de-dup still decides whether to emit at all.
+                OnLayoutFromHkl(lParam.Value, LayoutChangeReason.FocusRefresh);
                 return default;
             case PInvoke.WM_CLOSE:
                 PInvoke.PostQuitMessage(0);
@@ -282,7 +292,7 @@ public sealed class LayoutMonitor : IDisposable
         }
     }
 
-    private void ReadForegroundLayout() => OnLayoutFromHkl(ReadForegroundHkl());
+    private void ReadForegroundLayout(LayoutChangeReason reason) => OnLayoutFromHkl(ReadForegroundHkl(), reason);
 
     private static nint ReadForegroundHkl()
     {
@@ -354,7 +364,7 @@ public sealed class LayoutMonitor : IDisposable
         }
     }
 
-    private void OnLayoutFromHkl(nint hkl)
+    private void OnLayoutFromHkl(nint hkl, LayoutChangeReason reason)
     {
         if (_appState.IsPaused)
         {
@@ -368,7 +378,7 @@ public sealed class LayoutMonitor : IDisposable
         }
 
         _lastLangId = langId;
-        LayoutChanged?.Invoke(this, KeyboardLayoutResolver.Resolve(hkl));
+        LayoutChanged?.Invoke(this, new LayoutChange(KeyboardLayoutResolver.Resolve(hkl), reason));
     }
 
     private void OnPausedChanged(object? sender, bool isPaused)
