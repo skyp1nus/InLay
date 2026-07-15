@@ -4,8 +4,13 @@
 InLay is a Windows background utility that shows the current keyboard input language near the text caret (macOS-style), with switchable indicator modes (caret badge, full-screen splash, corner HUD, border glow).
 The full technical plan lives in `docs/InLay-tech-plan.md`. Read the section relevant to your task (architecture §3–4, milestones §9) before writing code.
 
+## Licensing & funding
+- **MIT across the whole repo, free forever** — Core, App, tests, future Diag. No paid tiers, activation keys, source-available parts, or "pro" features. Decision is final (tech plan §10).
+- Development is funded by **voluntary donations** — Buy Me a Coffee (primary) + GitHub Sponsors, wired via `.github/FUNDING.yml`; surfaced in the README **Support** section and the "About" window.
+- **No nag screens, pop-ups, or reminders** — the donation model must never degrade the product. Do not add monetization prompts, upsells, or telemetry.
+
 ## Stack
-.NET 10 LTS · C# 14 · WPF (`net10.0-windows`) · WPF-UI (lepo.co) · Microsoft.Windows.CsWin32 · .NET Generic Host · CommunityToolkit.Mvvm · H.NotifyIcon.Wpf · Serilog · xUnit + FluentAssertions.
+.NET 10 LTS · C# 14 · WPF (`net10.0-windows`) · WPF-UI (lepo.co) · Microsoft.Windows.CsWin32 · .NET Generic Host · CommunityToolkit.Mvvm · H.NotifyIcon.Wpf · Serilog · xUnit + AwesomeAssertions.
 
 ## Solution layout
 - `src/InLay.Core` — engine: layout monitoring, caret tracking, models, settings. **No UI dependencies, ever.**
@@ -24,7 +29,8 @@ The full technical plan lives in `docs/InLay-tech-plan.md`. Read the section rel
 - Win32 coordinates are physical pixels everywhere in Core; convert to DIPs only at the WPF boundary. DPI awareness is `PerMonitorV2`.
 - Overlay windows: `WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW`, `ShowActivated=false`, `ShowInTaskbar=false`, positioned via `SetWindowPos` in physical pixels.
 - Ask before adding any new NuGet dependency.
-- Third-party NuGet dependencies must be MIT/Apache-2.0/BSD only, to keep InLay.Core and the app freely usable by everyone, including commercially.
+- Third-party NuGet dependencies must be **MIT/Apache-2.0/BSD only**, to keep InLay.Core and the app freely usable by everyone, including commercially. "Free for non-commercial" or otherwise restricted licenses are a blocker regardless of convenience.
+- Re-verify a dependency's license **on every major-version bump**, not just when first adding it — licenses can change between versions (FluentAssertions went commercial in v8, which is why tests use AwesomeAssertions). `Directory.Packages.props` centralizes versions, so that's the place to check.
 
 ## Git & commits
 - Branch per task: `feature/<area>-<short-name>`. Never commit directly to `main`.
