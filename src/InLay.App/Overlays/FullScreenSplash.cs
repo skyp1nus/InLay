@@ -18,7 +18,7 @@ internal sealed class FullScreenSplash : OverlayWindow
     private const double PillWidthDip = 240;
     private const double PillHeightDip = 150;
 
-    private static readonly Duration FadeInDuration = new(TimeSpan.FromMilliseconds(130));
+    private static readonly Duration FadeInDuration = new(TimeSpan.FromMilliseconds(90));
     private static readonly Duration FadeOutDuration = new(TimeSpan.FromMilliseconds(280));
 
     private readonly TextBlock _label;
