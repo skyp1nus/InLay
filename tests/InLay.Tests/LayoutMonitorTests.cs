@@ -57,4 +57,54 @@ public class LayoutMonitorTests
         LayoutMonitor.ShouldEmit(UkUa, LayoutChangeReason.LayoutSwitch, UkUa, LayoutChangeReason.FocusRefresh)
             .Should().BeTrue();
     }
+
+    private static readonly nint WindowA = 0x1111;
+    private static readonly nint WindowB = 0x2222;
+
+    [Fact]
+    public void ClassifyReason_is_a_switch_when_the_layout_changes_under_the_same_window()
+    {
+        // The whole point: an in-place switch is a new LANGID under an unchanged foreground window, so it
+        // is detected even when HSHELL_LANGUAGE never fires.
+        LayoutMonitor.ClassifyReason(UkUa, WindowA, EnUs, WindowA)
+            .Should().Be(LayoutChangeReason.LayoutSwitch);
+    }
+
+    [Fact]
+    public void ClassifyReason_is_a_refresh_when_the_layout_is_unchanged()
+    {
+        LayoutMonitor.ClassifyReason(EnUs, WindowA, EnUs, WindowA)
+            .Should().Be(LayoutChangeReason.FocusRefresh);
+    }
+
+    [Fact]
+    public void ClassifyReason_is_a_refresh_when_the_window_changed_even_if_the_layout_differs()
+    {
+        // Focusing a different window that simply has another layout is not a switch the user made.
+        LayoutMonitor.ClassifyReason(UkUa, WindowB, EnUs, WindowA)
+            .Should().Be(LayoutChangeReason.FocusRefresh);
+    }
+
+    [Fact]
+    public void ClassifyReason_is_a_refresh_when_focusing_another_window_with_the_same_layout()
+    {
+        LayoutMonitor.ClassifyReason(EnUs, WindowB, EnUs, WindowA)
+            .Should().Be(LayoutChangeReason.FocusRefresh);
+    }
+
+    [Fact]
+    public void ClassifyReason_is_a_refresh_for_an_unresolved_layout()
+    {
+        LayoutMonitor.ClassifyReason(0, WindowA, EnUs, WindowA)
+            .Should().Be(LayoutChangeReason.FocusRefresh);
+    }
+
+    [Fact]
+    public void ClassifyReason_is_a_refresh_for_the_first_observation()
+    {
+        // No prior baseline: lastHwnd is 0 and a real window handle never equals 0, so the first read is
+        // a silent refresh, never a spurious startup switch.
+        LayoutMonitor.ClassifyReason(UkUa, WindowA, 0, 0)
+            .Should().Be(LayoutChangeReason.FocusRefresh);
+    }
 }
