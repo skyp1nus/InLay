@@ -32,6 +32,12 @@ The full technical plan lives in `docs/InLay-tech-plan.md`. Read the section rel
 - Third-party NuGet dependencies must be **MIT/Apache-2.0/BSD only**, to keep InLay.Core and the app freely usable by everyone, including commercially. "Free for non-commercial" or otherwise restricted licenses are a blocker regardless of convenience.
 - Re-verify a dependency's license **on every major-version bump**, not just when first adding it — licenses can change between versions (FluentAssertions went commercial in v8, which is why tests use AwesomeAssertions). `Directory.Packages.props` centralizes versions, so that's the place to check.
 
+## Code style
+- **PascalCase for all member names — including test methods.** No `snake_case`, no underscores in identifiers (`ShowFullScreen`, not `Show_full_screen`). Test names are full PascalCase sentences: `ClassifyReasonIsARefreshWhenTheWindowChanged`, not `ClassifyReason_is_a_refresh_when_...`.
+- **No `var`.** Use an explicit type, or a target-typed `new()` when the type is on the left (`MenuItem pause = new();`, `HWND hwnd = new(handle);`). Only fall back to `var` if no explicit form is possible (e.g. anonymous types) — which should be essentially never here.
+- **Meaningful, correctly-spelled names** for locals, fields, constants, and methods. No abbreviations that aren't already idiomatic (HKL, DPI, HWND are fine); no typos.
+- camelCase for locals/parameters, `_camelCase` for private fields, PascalCase for constants and everything public/internal.
+
 ## Git & commits
 - Branch per task: `feature/<area>-<short-name>`. Never commit directly to `main`.
 - **Small, atomic commits**: one logical change per commit, roughly ≤150 changed lines as a guideline. If a step feels bigger — split it before committing.
