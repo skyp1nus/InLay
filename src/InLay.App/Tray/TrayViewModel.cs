@@ -1,7 +1,6 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using InLay.App.Overlays;
 using InLay.App.Settings;
 using InLay.Core;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,6 @@ internal sealed partial class TrayViewModel : ObservableObject, IDisposable
 {
     private readonly AppState _appState;
     private readonly ISettingsWindowService _settingsWindow;
-    private readonly IIndicatorController _indicators;
     private readonly ILogger<TrayViewModel> _logger;
 
     [ObservableProperty]
@@ -25,50 +23,24 @@ internal sealed partial class TrayViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _toolTip = ProductInfo.Name;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsSplashMode))]
-    [NotifyPropertyChangedFor(nameof(IsHudMode))]
-    [NotifyPropertyChangedFor(nameof(IsBothMode))]
-    private IndicatorMode _indicatorMode;
-
     public TrayViewModel(
         AppState appState,
         ISettingsWindowService settingsWindow,
-        IIndicatorController indicators,
         ILogger<TrayViewModel> logger)
     {
         _appState = appState;
         _settingsWindow = settingsWindow;
-        _indicators = indicators;
         _logger = logger;
-        _indicatorMode = indicators.Mode;
 
         _appState.PausedChanged += OnPausedChanged;
         Sync(_appState.IsPaused);
     }
-
-    /// <summary>Whether the FullScreenSplash-only mode is active (mirrors the tray radio check).</summary>
-    public bool IsSplashMode => IndicatorMode == IndicatorMode.Splash;
-
-    /// <summary>Whether the CornerHud-only mode is active.</summary>
-    public bool IsHudMode => IndicatorMode == IndicatorMode.Hud;
-
-    /// <summary>Whether both indicator modes are active.</summary>
-    public bool IsBothMode => IndicatorMode == IndicatorMode.Both;
 
     [RelayCommand]
     private void TogglePause()
     {
         bool paused = _appState.TogglePause();
         _logger.LogInformation("Pause toggled to {IsPaused}.", paused);
-    }
-
-    [RelayCommand]
-    private void SetIndicatorMode(IndicatorMode mode)
-    {
-        _indicators.SetMode(mode);
-        IndicatorMode = mode;
-        _logger.LogInformation("Indicator mode selected: {Mode}.", mode);
     }
 
     [RelayCommand]

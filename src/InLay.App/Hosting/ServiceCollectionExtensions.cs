@@ -48,12 +48,10 @@ internal static class ServiceCollectionExtensions
         builder.Services.AddSingleton<TrayViewModel>();
         builder.Services.AddSingleton<TrayIconService>();
 
-        // Layout engine + indicator overlays (M1).
+        // Layout engine + transient indicator overlays.
         builder.Services.AddSingleton<LayoutMonitor>();
         builder.Services.AddSingleton<FullScreenSplash>();
-        builder.Services.AddSingleton<CornerHud>();
         builder.Services.AddSingleton<IndicatorCoordinator>();
-        builder.Services.AddSingleton<IIndicatorController>(sp => sp.GetRequiredService<IndicatorCoordinator>());
 
         builder.Services.AddHostedService<ApplicationHostService>();
 

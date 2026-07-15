@@ -1,7 +1,7 @@
 # CLAUDE.md — InLay
 
 ## What this is
-InLay is a Windows background utility that shows the current keyboard input language near the text caret (macOS-style), with switchable indicator modes (caret badge, full-screen splash, corner HUD, border glow).
+InLay is a Windows background utility that shows the current keyboard input language near the text caret (macOS-style). Indicators are **transient-only** — shown briefly on a real layout switch: the full-screen splash today, the caret-side badge next. Persistent modes (corner HUD, border glow, tray-only) were dropped as more distracting than useful.
 The full technical plan lives in `docs/InLay-tech-plan.md`. Read the section relevant to your task (architecture §3–4, milestones §9) before writing code.
 
 ## Licensing & funding
