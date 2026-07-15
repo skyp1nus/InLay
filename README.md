@@ -23,41 +23,39 @@ tools are often dated, bloated, or closed-source. macOS has this built in — In
 brings it to Windows and aims to do it better.
 
 A key differentiator is the **indicator-mode system**: you choose *how* to see the
-language — a compact badge by the caret, a full-screen splash, a corner HUD, a screen-edge
-glow — and modes can be combined. (Windows can't render emoji flags in these overlays,
-so InLay identifies languages by color and text, not flags.)
+language — a compact badge by the caret or a full-screen splash. Indicators are
+transient: a brief signal at the moment you switch, macOS-style, never a persistent
+element cluttering the screen. (Windows can't render emoji flags in these overlays, so
+InLay identifies languages by color and text, not flags.)
 
 ## Features
 
 - **Full-screen splash** — a large, translucent pill centered on the active monitor,
   shown on a real layout switch. Useful even before caret tracking exists.
-- **Corner HUD** — a small persistent pill in a screen corner that always reflects the
-  current layout.
-- **Splash on real switches only** — the splash fires when you actually switch language,
-  not when you alt-tab between windows that happen to have different layouts.
-- **Event-driven & quiet** — near-zero idle CPU; no polling of the keyboard.
+- **On real switches only** — the indicator fires when you actually switch language, not
+  when you alt-tab between windows that happen to have different layouts.
+- **Quiet & light** — near-zero idle CPU; layout is polled with two cheap calls, never
+  your keystrokes.
 - **No keyboard hooks, no DLL injection, no telemetry, no network calls** (except update
   checks). Your input is never read.
 - **Per-monitor DPI-aware** (`PerMonitorV2`); click-through overlays that never steal focus.
-- **System tray** control with an indicator-mode submenu, pause, and settings.
+- **System tray** control with pause and settings.
 
 ### Indicator modes
+
+All indicators are transient — a brief signal on a real layout switch.
 
 | Mode | Status |
 |---|---|
 | Full-screen splash | ✅ Available |
-| Corner HUD | ✅ Available |
 | Caret badge (by the text caret) | 🔜 Planned |
 | Cursor badge (fallback near the mouse) | 🔜 Planned |
-| Border glow (screen-edge color) | 🔜 Planned |
-| Tray-only (glyph/color) | 🔜 Planned |
 
 ## Status
 
-**v0.1 — preview (milestone M1).** The layout monitor plus the Full-screen splash and
-Corner HUD modes work today; caret tracking, the full settings window, per-language
-colors, and additional modes are on the [roadmap](#roadmap). Expect rough edges — feedback
-is very welcome.
+**v0.1 — preview (milestone M1).** The layout monitor and the Full-screen splash work
+today; caret tracking, the full settings window, per-language colors, and additional
+modes are on the [roadmap](#roadmap). Expect rough edges — feedback is very welcome.
 
 ## Building from source
 
