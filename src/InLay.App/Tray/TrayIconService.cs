@@ -3,7 +3,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using H.NotifyIcon;
-using InLay.App.Overlays;
 
 namespace InLay.App.Tray;
 
@@ -60,32 +59,11 @@ internal sealed class TrayIconService : IDisposable
             new Binding(nameof(TrayViewModel.IsPaused)) { Mode = BindingMode.OneWay });
         menu.Items.Add(pause);
 
-        var indicator = new MenuItem { Header = "Indicator" };
-        indicator.Items.Add(BuildModeItem("Splash", IndicatorMode.Splash, nameof(TrayViewModel.IsSplashMode)));
-        indicator.Items.Add(BuildModeItem("Corner HUD", IndicatorMode.Hud, nameof(TrayViewModel.IsHudMode)));
-        indicator.Items.Add(BuildModeItem("Both", IndicatorMode.Both, nameof(TrayViewModel.IsBothMode)));
-        menu.Items.Add(indicator);
-
         menu.Items.Add(new MenuItem { Header = "Settings…", Command = _viewModel.ShowSettingsCommand });
         menu.Items.Add(new Separator());
         menu.Items.Add(new MenuItem { Header = "Exit", Command = _viewModel.ExitCommand });
 
         return menu;
-    }
-
-    // A checkable mode item: its check state mirrors the view model (one-way) and clicking it selects
-    // the mode. DataContext is inherited from the context menu, so no explicit binding source is needed.
-    private MenuItem BuildModeItem(string header, IndicatorMode mode, string checkedProperty)
-    {
-        var item = new MenuItem
-        {
-            Header = header,
-            IsCheckable = true,
-            Command = _viewModel.SetIndicatorModeCommand,
-            CommandParameter = mode,
-        };
-        item.SetBinding(MenuItem.IsCheckedProperty, new Binding(checkedProperty) { Mode = BindingMode.OneWay });
-        return item;
     }
 
     public void Dispose()
