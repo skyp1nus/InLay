@@ -93,8 +93,8 @@ is currently in Ukrainian; an English translation is planned for the public rele
 InLay is free and open source, and it stays that way. If it saves you a glance at the
 tray a hundred times a day, you can support development:
 
+- ☕ **Buy Me a Coffee** — https://buymeacoffee.com/your-bmc *(placeholder — one-off coffees & memberships)*
 - ❤️ **GitHub Sponsors** — https://github.com/sponsors/skyp1nus *(placeholder)*
-- ☕ **Ko-fi** — https://ko-fi.com/your-ko-fi *(placeholder)*
 
 Starring the repo and sharing it helps just as much.
 
