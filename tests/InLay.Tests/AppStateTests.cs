@@ -7,13 +7,13 @@ namespace InLay.Tests;
 public class AppStateTests
 {
     [Fact]
-    public void Defaults_to_not_paused()
+    public void DefaultsToNotPaused()
     {
         new AppState().IsPaused.Should().BeFalse();
     }
 
     [Fact]
-    public void Setting_IsPaused_raises_PausedChanged_with_the_new_value()
+    public void SettingIsPausedRaisesPausedChangedWithTheNewValue()
     {
         var state = new AppState();
         var raised = new List<bool>();
@@ -26,7 +26,7 @@ public class AppStateTests
     }
 
     [Fact]
-    public void Setting_the_same_value_does_not_raise_the_event()
+    public void SettingTheSameValueDoesNotRaiseTheEvent()
     {
         var state = new AppState();
         var raisedCount = 0;
@@ -38,7 +38,7 @@ public class AppStateTests
     }
 
     [Fact]
-    public void TogglePause_flips_the_flag_returns_it_and_raises_the_event()
+    public void TogglePauseFlipsTheFlagReturnsItAndRaisesTheEvent()
     {
         var state = new AppState();
         var raised = new List<bool>();

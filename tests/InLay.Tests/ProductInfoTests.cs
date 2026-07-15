@@ -7,14 +7,14 @@ namespace InLay.Tests;
 public class ProductInfoTests
 {
     [Fact]
-    public void Name_is_InLay()
+    public void NameIsInLay()
     {
         ProductInfo.Name.Should().Be("InLay");
         ProductInfo.AutostartValueName.Should().Be("InLay");
     }
 
     [Fact]
-    public void Identifiers_are_non_empty_and_distinct()
+    public void IdentifiersAreNonEmptyAndDistinct()
     {
         ProductInfo.MutexId.Should().NotBe(Guid.Empty);
         ProductInfo.ActivationEventId.Should().NotBe(Guid.Empty);
@@ -22,7 +22,7 @@ public class ProductInfoTests
     }
 
     [Fact]
-    public void Kernel_object_names_are_session_local_and_embed_their_guids()
+    public void KernelObjectNamesAreSessionLocalAndEmbedTheirGuids()
     {
         ProductInfo.MutexName.Should().StartWith(@"Local\InLay-")
             .And.Contain(ProductInfo.MutexId.ToString("N"));
@@ -31,7 +31,7 @@ public class ProductInfoTests
     }
 
     [Fact]
-    public void Kernel_object_names_are_distinct()
+    public void KernelObjectNamesAreDistinct()
     {
         ProductInfo.MutexName.Should().NotBe(ProductInfo.ActivationEventName);
     }
