@@ -46,9 +46,9 @@ internal sealed class TrayIconService : IDisposable
 
     private ContextMenu BuildContextMenu()
     {
-        var menu = new ContextMenu { DataContext = _viewModel };
+        ContextMenu menu = new() { DataContext = _viewModel };
 
-        var pause = new MenuItem
+        MenuItem pause = new()
         {
             Header = "Pause",
             IsCheckable = true,
