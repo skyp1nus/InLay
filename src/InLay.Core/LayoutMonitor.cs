@@ -95,7 +95,7 @@ public sealed class LayoutMonitor : IDisposable
         }
 
         _ready.Reset();
-        var thread = new Thread(PumpThreadMain)
+        Thread thread = new(PumpThreadMain)
         {
             Name = "InLay.LayoutMonitor",
             IsBackground = true,
@@ -142,7 +142,7 @@ public sealed class LayoutMonitor : IDisposable
     {
         fixed (char* classNamePtr = WindowClassName)
         {
-            var className = new PCWSTR(classNamePtr);
+            PCWSTR className = new(classNamePtr);
             try
             {
                 if (!Initialize(className))
@@ -169,7 +169,7 @@ public sealed class LayoutMonitor : IDisposable
 
     private unsafe bool Initialize(PCWSTR className)
     {
-        var windowClass = new WNDCLASSEXW
+        WNDCLASSEXW windowClass = new()
         {
             cbSize = (uint)Marshal.SizeOf<WNDCLASSEXW>(),
             lpfnWndProc = _wndProc,
