@@ -9,7 +9,7 @@ public class AppPathsTests
     private const string Base = @"C:\Users\test\AppData\Local";
 
     [Fact]
-    public void Resolve_places_everything_under_LocalAppData_InLay()
+    public void ResolvePlacesEverythingUnderLocalAppDataInLay()
     {
         AppPathSet paths = AppPaths.Resolve(Base);
 
@@ -19,7 +19,7 @@ public class AppPathsTests
     }
 
     [Fact]
-    public void Resolve_log_file_is_a_rolling_template_under_the_logs_directory()
+    public void ResolveLogFileIsARollingTemplateUnderTheLogsDirectory()
     {
         AppPathSet paths = AppPaths.Resolve(Base);
 
@@ -30,7 +30,7 @@ public class AppPathsTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Resolve_rejects_a_missing_base(string? invalidBase)
+    public void ResolveRejectsAMissingBase(string? invalidBase)
     {
         Action act = () => AppPaths.Resolve(invalidBase!);
 
@@ -38,7 +38,7 @@ public class AppPathsTests
     }
 
     [Fact]
-    public void Live_paths_agree_with_Resolve_over_the_current_LocalAppData()
+    public void LivePathsAgreeWithResolveOverTheCurrentLocalAppData()
     {
         string liveBase = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         AppPathSet expected = AppPaths.Resolve(liveBase);

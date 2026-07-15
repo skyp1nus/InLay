@@ -21,7 +21,7 @@ internal static class OverlayInterop
     /// </summary>
     public static void MakeClickThrough(nint windowHandle)
     {
-        var hwnd = new HWND(windowHandle);
+        HWND hwnd = new(windowHandle);
         int current = PInvoke.GetWindowLong(hwnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
         int updated = unchecked((int)ComposeExStyle((uint)current));
         _ = PInvoke.SetWindowLong(hwnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, updated);
@@ -65,7 +65,7 @@ internal static class OverlayInterop
         x = y = width = height = 0;
 
         HMONITOR monitor = PInvoke.MonitorFromWindow(new HWND(windowHandle), MONITOR_FROM_FLAGS.MONITOR_DEFAULTTOPRIMARY);
-        var info = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+        MONITORINFO info = new() { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
         if (!PInvoke.GetMonitorInfo(monitor, ref info))
         {
             return false;
